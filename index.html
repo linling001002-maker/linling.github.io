@@ -5,100 +5,591 @@
 <title>测试数据地址生成器</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px;background:#f6f7fb;color:#111}
-h1{font-size:20px;margin:0 0 16px}
-.container{max-width:980px;margin:0 auto}
-.panel{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
-.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
-label{font-size:13px;color:#374151}
-select,input{height:36px;padding:6px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
-button{height:36px;padding:0 14px;border:1px solid #1f2937;background:#111;color:#fff;border-radius:8px;cursor:pointer}
-button.secondary{background:#fff;color:#111}
-button:disabled{opacity:.5;cursor:not-allowed}
-pre,textarea{width:100%;min-height:160px;background:#0f172a;color:#e5e7eb;border-radius:10px;padding:12px;overflow:auto;border:none}
-.table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
-.table th,.table td{border-bottom:1px solid #e5e7eb;padding:10px;text-align:left;font-size:13px}
-.table tr:hover{background:#f9fafb}
-.kbd{font-family:monospace;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:2px 6px}
-.small{font-size:12px;color:#6b7280}
-.flex-end{display:flex;gap:8px;justify-content:flex-end}
-footer{margin-top:16px;color:#6b7280;font-size:12px}
-.badge{display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:8px;padding:2px 8px;font-size:12px}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh;margin:0;display:flex;flex-direction:column}
+/* Custom Scrollbar */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#f1f5f9}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+
+.app-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:#4f46e5;letter-spacing:-0.03em}
+.logo svg{width:28px;height:28px}
+
+.container{max-width:1200px;margin:40px auto;padding:0 24px;width:100%;box-sizing:border-box}
+
+.nav-tabs{display:inline-flex;background:#f1f5f9;padding:4px;border-radius:14px;margin-bottom:32px}
+.nav-item{padding:10px 24px;border-radius:11px;cursor:pointer;font-weight:600;color:#64748b;transition:all 0.2s ease;font-size:14px;display:flex;align-items:center;gap:8px}
+.nav-item svg{width:16px;height:16px}
+.nav-item:hover{color:#4f46e5}
+.nav-item.active{background:#fff;color:#4f46e5;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)}
+
+.tab-content{display:none;animation:slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)}}
+.tab-content.active{display:block}
+
+.panel{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 20px 25px -5px rgba(0,0,0,0.03)}
+.section-title{font-size:18px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px;color:#0f172a}
+.section-title svg{width:20px;height:20px;color:#4f46e5}
+
+.grid-config{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:20px;margin-bottom:28px;background:#f8fafc;padding:24px;border-radius:16px;border:1px solid #f1f5f9}
+.field{display:flex;flex-direction:column;gap:8px}
+label{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em}
+
+select,input,textarea{padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;font-size:14px;transition:all 0.2s;color:#1e293b;font-family:inherit}
+select:focus,input:focus,textarea:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 4px rgba(79,70,229,0.1)}
+
+.button-group{display:flex;gap:12px;margin-bottom:32px}
+button{height:44px;padding:0 24px;border:none;background:#4f46e5;color:#fff;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button svg{width:18px;height:18px}
+button:hover{background:#4338ca;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,70,229,0.25)}
+button:active{transform:translateY(0)}
+button.secondary{background:#fff;color:#475569;border:1px solid #e2e8f0}
+button.secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+button:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+.preview-box{background:#f8fafc;border-radius:16px;border:1px solid #f1f5f9;padding:20px;margin-top:24px}
+.table-container{background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden}
+.table{width:100%;border-collapse:collapse}
+.table th{background:#f8fafc;font-weight:700;color:#475569;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;padding:14px 16px;text-align:left;border-bottom:1px solid #e2e8f0}
+.table td{padding:14px 16px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#fcfdfe}
+
+.code-area{position:relative;margin-top:32px}
+textarea#raw{width:100%;min-height:500px;background:#1e293b;color:#e2e8f0;font-family:'Fira Code',monospace;font-size:13px;line-height:1.6;border:none;border-radius:12px;padding:16px;box-sizing:border-box}
+
+.info-alert{background:#eef2ff;border:1px solid #e0e7ff;border-radius:12px;padding:16px;display:flex;gap:12px;margin-top:24px}
+.info-alert svg{width:20px;height:20px;color:#4f46e5;flex-shrink:0}
+.info-alert-content{font-size:13px;color:#4338ca;line-height:1.5}
+
+/* Diff Panel Specific */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.diff-result-area{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px}
+.diff-view{min-height:200px;font-size:15px;line-height:1.8;white-space:pre-wrap;word-break:break-all;color:#334155}
+.diff-mismatch{color:#e11d48;background:#fff1f2;padding:0 2px;border-radius:4px;font-weight:700;text-decoration:underline decoration-thickness(2px)}
+.diff-match{color:#059669}
+.status-pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.status-pill.success{background:#ecfdf5;color:#059669}
+.status-pill.error{background:#fff1f2;color:#e11d48}
+
+footer{margin-top:48px;padding:24px 0;text-align:center;color:#94a3b8;font-size:12px;border-top:1px solid #e2e8f0}
+.badge{background:#e0e7ff;color:#4338ca;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700}
 </style>
 </head>
 <body>
+<header class="app-header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    TesterKit Professional-00
+  </div>
+  <div class="badge">V2.5.0 STABLE</div>
+</header>
+
 <div class="container">
-  <h1>测试数据地址生成器 <span class="badge">JS</span></h1>
-  <div class="panel">
-    <div class="row">
-      <div class="field">
-        <label>国家</label>
-        <select id="country">
-          <option value="CN">中国</option>
-          <option value="US">美国</option>
-          <option value="UK">英国</option>
-          <option value="DE">德国</option>
-          <option value="FR">法国</option>
-          <option value="JP">日本</option>
-          <option value="IN">印度</option>
-          <option value="CA">加拿大</option>
-          <option value="AU">澳大利亚</option>
-          <option value="BR">巴西</option>
-        </select>
-      </div>
-      <div class="field" style="max-width:140px">
-        <label>数量</label>
-        <input id="count" type="number" min="1" max="10000" value="20">
-      </div>
-      <div class="field" style="max-width:200px">
-        <label>输出格式</label>
-        <select id="format">
-          <option value="json">JSON</option>
-          <option value="csv">CSV</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>随机种子（可选）</label>
-        <input id="seed" type="text" placeholder="如：test-2026">
-      </div>
+  <div class="nav-tabs">
+    <div class="nav-item active" data-tab="generator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      地址生成器
     </div>
-    <div class="row">
-      <button id="generate">生成</button>
-      <button id="copy" class="secondary" disabled>复制</button>
-      <button id="download" class="secondary" disabled>下载</button>
-      <span class="small">支持固定种子复现相同结果。复制键将复制下方文本区域的内容。</span>
+    <div class="nav-item" data-tab="diff">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M8 21H3v-5M15 21l6-6M9 3l-6 6"/></svg>
+      精准文本对比
     </div>
-    <div class="row">
-      <div class="field" style="flex:2">
-        <label>预览</label>
-        <div id="preview"></div>
+    <div class="nav-item" data-tab="json">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      JSON 格式化
+    </div>
+    <div class="nav-item" data-tab="time">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      时间戳转换
+    </div>
+    <div class="nav-item" data-tab="length">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><line x1="7" y1="7" x2="7" y2="12"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="17" y1="7" x2="17" y2="12"/><path d="M2 12v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5"/></svg>
+      长度换算
+    </div>
+  </div>
+
+  <!-- Generator Tab -->
+  <div id="tab-generator" class="tab-content active">
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        测试数据地址生成器
       </div>
-    </div>
-    <div class="row">
-      <div class="field">
-        <label>原始数据</label>
+      
+      <div class="grid-config">
+        <div class="field">
+          <label>选择目标国家/地区</label>
+          <select id="country">
+            <option value="CN">中国 (China)</option>
+            <option value="US">美国 (United States)</option>
+            <option value="UK">英国 (United Kingdom)</option>
+            <option value="DE">德国 (Germany)</option>
+            <option value="FR">法国 (France)</option>
+            <option value="JP">日本 (Japan)</option>
+            <option value="IN">印度 (India)</option>
+            <option value="CA">加拿大 (Canada)</option>
+            <option value="AU">澳大利亚 (Australia)</option>
+            <option value="BR">巴西 (Brazil)</option>
+            <option value="BE">比利时 (Belgium)</option>
+            <option value="NL">荷兰 (Netherlands)</option>
+            <option value="CH">瑞士 (Switzerland)</option>
+            <option value="SE">瑞典 (Sweden)</option>
+            <option value="NO">挪威 (Norway)</option>
+            <option value="RU">俄罗斯 (Russia)</option>
+            <option value="KR">韩国 (South Korea)</option>
+            <option value="SG">新加坡 (Singapore)</option>
+            <option value="MX">墨西哥 (Mexico)</option>
+            <option value="ES">西班牙 (Spain)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>生成数量 (1-1000)</label>
+          <input id="count" type="number" min="1" max="1000" value="20">
+        </div>
+        <div class="field">
+          <label>输出格式</label>
+          <select id="format">
+            <option value="json">JSON Object</option>
+            <option value="csv">CSV Spreadsheet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>随机种子 (Seed)</label>
+          <input id="seed" type="text" placeholder="留空则随机...">
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button id="generate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          立即生成数据
+        </button>
+        <button id="copy" class="secondary" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制到剪贴板
+        </button>
+        <button id="download" class="secondary" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下载文件
+        </button>
+      </div>
+
+      <div class="preview-box">
+        <label style="margin-bottom:12px; display:block">实时预览 (Preview)</label>
+        <div class="table-container">
+          <div id="preview"></div>
+        </div>
+      </div>
+
+      <div class="code-area">
+        <label style="margin-bottom:12px; display:block">原始数据 (Raw Data)</label>
         <textarea id="raw" readonly></textarea>
       </div>
+
+      <div class="info-alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div class="info-alert-content">
+          <strong>真实性声明：</strong> 所有生成的地址、邮编及行政区划均来源于内置的真实公共地标库（非随机伪造）。在大批量生成时会根据库容量进行循环匹配，确保 100% 通过格式校验。
+        </div>
+      </div>
     </div>
-    <div class="row">
-      <span class="small" style="color: #b91c1c; background: #fee2e2; padding: 8px; border-radius: 6px; width: 100%;">
-        <strong>数据真实性说明：</strong>本工具不接入付费地图 API，因此无法生成无限量的唯一私人住址。目前生成的地址是从内置的<strong>真实公共地标、政府机构或商业中心库</strong>中随机抽取的。这些地址 100% 真实存在且邮编匹配，所有字段（City, State, Zip）均符合该国英文书写标准。
-      </span>
-    </div>
-    <footer>字段包含：phone、email、address、country/region、state/province、city、postal/zip code</footer>
   </div>
+
+  <!-- Diff Tab -->
+  <div id="tab-diff" class="tab-content">
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M8 21H3v-5M15 21l6-6M9 3l-6 6"/></svg>
+        精准文本对比工具
+      </div>
+
+      <div class="info-alert" style="margin-bottom:28px; background:#f8fafc; border-color:#e2e8f0">
+        <div class="info-alert-content" style="color:#64748b">
+          <strong>功能：</strong> 深度比对文字、标点、空格、大小写、全半角差异。不一致处将以红色高亮显示。
+        </div>
+      </div>
+      
+      <div class="diff-grid">
+        <div class="field">
+          <label>原版文案 (Source) <span class="badge" id="count-old">0</span></label>
+          <textarea id="text-old" style="height:240px" placeholder="在此输入原始参考文案..."></textarea>
+        </div>
+        <div class="field">
+          <label>待校文案 (Target) <span class="badge" id="count-new">0</span></label>
+          <textarea id="text-new" style="height:240px" placeholder="在此输入需要校验的文案..."></textarea>
+        </div>
+      </div>
+      
+      <div class="controls" style="border:none; padding:0">
+        <button id="btn-compare">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          立即开始比对
+        </button>
+        <button id="btn-clear" class="secondary">清空</button>
+        <div id="compare-status" style="margin-left: auto; padding: 20px 0px 0px 0px;"></div>
+      </div>
+      
+      <div class="diff-result-area" style="margin-top:32px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+          <label>差异可视化预览</label>
+          <div style="display:flex; gap:16px; font-size:12px; font-weight:600">
+            <span style="color:#059669">● 一致 (Match)</span>
+            <span style="color:#e11d48">● 差异 (Mismatch)</span>
+          </div>
+        </div>
+        <div id="diff-output" class="diff-view">等待输入内容...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSON Tab -->
+  <div id="tab-json" class="tab-content">
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        JSON 转换与格式化工具
+      </div>
+
+      <div class="info-alert" style="margin-bottom:28px; background:#f8fafc; border-color:#e2e8f0">
+        <div class="info-alert-content" style="color:#64748b">
+          <strong>功能：</strong> 快速美化混乱的 JSON 代码，或将其压缩为单行。支持语法自动校验和一键导出。
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:24px">
+        <label>输入 JSON 内容 <span class="badge" id="json-size">0 KB</span></label>
+        <textarea id="json-input" style="height:400px; font-family:'Fira Code',monospace;" placeholder="在此粘贴您的 JSON 代码..."></textarea>
+      </div>
+
+      <div class="button-group" style="margin-bottom:0">
+        <button id="btn-json-format">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          格式化 (Beautify)
+        </button>
+        <button id="btn-json-minify" class="secondary">
+          压缩 (Minify)
+        </button>
+        <button id="btn-json-copy" class="secondary">
+          复制结果
+        </button>
+        <button id="btn-json-clear" class="secondary">
+          清空
+        </button>
+        <div id="json-status" style="margin-left: auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Time Tab -->
+  <div id="tab-time" class="tab-content">
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Unix 时间戳转换器
+      </div>
+
+      <div class="grid-config" style="background: #fdf2f8; border-color: #fce7f3; margin-bottom: 32px;">
+        <div class="field" style="flex-direction: row; align-items: center; gap: 12px; min-width: 100%;">
+          <span style="font-weight: 700; color: #db2777;">当前北京时间：</span>
+          <span id="current-time-str" style="font-family: monospace; font-size: 18px; font-weight: 800; color: #9d174d;">加载中...</span>
+          <span style="margin-left: 20px; font-weight: 700; color: #db2777;">时间戳：</span>
+          <span id="current-timestamp-val" style="font-family: monospace; font-size: 18px; font-weight: 800; color: #9d174d;">-</span>
+        </div>
+      </div>
+
+      <div class="grid-config" style="grid-template-columns: 1fr auto 1fr; align-items: end;">
+        <div class="field">
+          <label>Unix 时间戳 (秒或毫秒)</label>
+          <input id="input-timestamp" type="text" placeholder="例如：1712563200">
+        </div>
+        <div style="padding-bottom: 10px;">
+          <button id="btn-ts-to-date" style="background: #db2777;">
+            转换 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="field">
+          <label>北京时间 (YYYY-MM-DD HH:mm:ss)</label>
+          <input id="output-date" type="text" readonly style="background: #f8fafc;">
+        </div>
+      </div>
+
+      <div class="grid-config" style="grid-template-columns: 1fr auto 1fr; align-items: end;">
+        <div class="field">
+          <label>北京时间 (YYYY-MM-DD HH:mm:ss)</label>
+          <input id="input-date" type="text" placeholder="例如：2026-04-08 16:00:00">
+        </div>
+        <div style="padding-bottom: 10px;">
+          <button id="btn-date-to-ts" style="background: #db2777;">
+            转换 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="field">
+          <label>Unix 时间戳 (单位：秒)</label>
+          <input id="output-timestamp" type="text" readonly style="background: #f8fafc;">
+        </div>
+      </div>
+
+      <div class="info-alert" style="background: #fdf2f8; border-color: #fce7f3; color: #9d174d;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #db2777;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div class="info-alert-content" style="color: #9d174d;">
+          <strong>提示：</strong>转换器会自动识别 10 位（秒）或 13 位（毫秒）时间戳。输入日期请务必遵循标准格式。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Length Tab -->
+  <div id="tab-length" class="tab-content">
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><line x1="7" y1="7" x2="7" y2="12"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="17" y1="7" x2="17" y2="12"/><path d="M2 12v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5"/></svg>
+        全能长度单位换算器
+      </div>
+
+      <div class="info-alert" style="margin-bottom:28px; background:#f0fdf4; border-color:#dcfce7">
+        <div class="info-alert-content" style="color:#166534">
+          <strong>提示：</strong> 输入任意数值，系统将实时自动换算为其它所有单位。结果保留 2-4 位有效小数。
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+        <div class="panel" style="background:#f8fafc; border:none; padding:20px;">
+          <label style="margin-bottom:16px; display:block; color:#1e293b; border-bottom:2px solid #e2e8f0; padding-bottom:8px">公制单位 (Metric)</label>
+          <div class="row">
+            <div class="field"><label>毫米 (mm)</label><input type="number" class="len-input" id="unit-mm" step="any"></div>
+            <div class="field"><label>厘米 (cm)</label><input type="number" class="len-input" id="unit-cm" step="any"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>分米 (dm)</label><input type="number" class="len-input" id="unit-dm" step="any"></div>
+            <div class="field"><label>米 (m)</label><input type="number" class="len-input" id="unit-m" step="any"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>千米 (km)</label><input type="number" class="len-input" id="unit-km" step="any"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="background:#fefce8; border:none; padding:20px;">
+          <label style="margin-bottom:16px; display:block; color:#854d0e; border-bottom:2px solid #fef08a; padding-bottom:8px">英制单位 (Imperial)</label>
+          <div class="row">
+            <div class="field"><label>英寸 (inch)</label><input type="number" class="len-input" id="unit-inch" step="any"></div>
+            <div class="field"><label>英尺 (ft)</label><input type="number" class="len-input" id="unit-ft" step="any"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>码 (yd)</label><input type="number" class="len-input" id="unit-yd" step="any"></div>
+            <div class="field"><label>英里 (mile)</label><input type="number" class="len-input" id="unit-mile" step="any"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group" style="margin-top:32px; justify-content:center">
+        <button id="btn-len-clear" class="secondary">清空所有数值</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    00TesterKit Professional &copy; 2026 - 全球化软件测试数据一站式解决方案 | 作者：00
+  </footer>
 </div>
 <script>
-function hashStrToInt(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+// Tab Switching
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.nav-item, .tab-content').forEach(el => el.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(`tab-${item.dataset.tab}`).classList.add('active');
+  };
+});
+
+// Diff Tool Logic
+function runDiff() {
+  const oldText = document.getElementById('text-old').value;
+  const newText = document.getElementById('text-new').value;
+  const statusEl = document.getElementById('compare-status');
+  
+  document.getElementById('count-old').textContent = oldText.length;
+  document.getElementById('count-new').textContent = newText.length;
+  
+  if (!oldText && !newText) {
+    document.getElementById('diff-output').innerHTML = "等待输入内容...";
+    statusEl.innerHTML = '';
+    return;
+  }
+
+  if (oldText === newText) {
+    statusEl.innerHTML = '<div class="status-pill success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>内容完全一致</div>';
+  } else {
+    statusEl.innerHTML = '<div class="status-pill error"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>检测到细微差异</div>';
+  }
+
+  const result = (function(o, n) {
+    const out = [];
+    const ow = Array.from(o);
+    const nw = Array.from(n);
+    const dp = Array.from({ length: ow.length + 1 }, () => Array(nw.length + 1).fill(0));
+    for (let i = 1; i <= ow.length; i++) {
+      for (let j = 1; j <= nw.length; j++) {
+        if (ow[i-1] === nw[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+        else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+      }
+    }
+    let i = ow.length, j = nw.length;
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && ow[i-1] === nw[j-1]) { out.unshift({ t: 's', v: ow[i-1] }); i--; j--; }
+      else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) { out.unshift({ t: 'a', v: nw[j-1] }); j--; }
+      else { out.unshift({ t: 'd', v: ow[i-1] }); i--; }
+    }
+    return out;
+  })(oldText, newText);
+
+  let html = '';
+  result.forEach(p => {
+    const isSpecial = p.v === ' ' || p.v === '\n' || p.v === '\t';
+    let val = p.v;
+    if (p.v === ' ') val = '&nbsp;';
+    if (p.v === '\n') val = '↵\n';
+    if (p.v === '\t') val = '→&nbsp;&nbsp;&nbsp;&nbsp;';
+
+    if (p.t === 'a' || p.t === 'd') {
+      html += `<span class="diff-mismatch">${val}</span>`;
+    } else {
+      html += `<span class="diff-match">${val}</span>`;
+    }
+  });
+  document.getElementById('diff-output').innerHTML = html;
+}
+document.getElementById('btn-compare').onclick = runDiff;
+document.getElementById('btn-clear').onclick = () => {
+  document.getElementById('text-old').value = '';
+  document.getElementById('text-new').value = '';
+  runDiff();
+};
+document.getElementById('text-old').oninput = runDiff;
+document.getElementById('text-new').oninput = runDiff;
+
+// JSON Tool Logic
+const elJsonInput = document.getElementById('json-input');
+const elJsonStatus = document.getElementById('json-status');
+const elJsonSize = document.getElementById('json-size');
+
+function updateJsonSize() {
+  const size = (new Blob([elJsonInput.value]).size / 1024).toFixed(2);
+  elJsonSize.textContent = `${size} KB`;
+}
+
+function processJson(format = true) {
+  const val = elJsonInput.value.trim();
+  if (!val) return;
+  try {
+    const obj = JSON.parse(val);
+    elJsonInput.value = format ? JSON.stringify(obj, null, 2) : JSON.stringify(obj);
+    elJsonStatus.innerHTML = '<div class="status-pill success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>解析成功</div>';
+    updateJsonSize();
+  } catch (e) {
+    elJsonStatus.innerHTML = `<div class="status-pill error"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>语法错误</div>`;
+  }
+}
+
+document.getElementById('btn-json-format').onclick = () => processJson(true);
+document.getElementById('btn-json-minify').onclick = () => processJson(false);
+document.getElementById('btn-json-clear').onclick = () => {
+  elJsonInput.value = '';
+  elJsonStatus.innerHTML = '';
+  updateJsonSize();
+};
+document.getElementById('btn-json-copy').onclick = async () => {
+  if (!elJsonInput.value) return;
+  try {
+    await navigator.clipboard.writeText(elJsonInput.value);
+    const btn = document.getElementById('btn-json-copy');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '已复制！';
+    setTimeout(() => btn.innerHTML = originalText, 2000);
+  } catch (err) {}
+};
+elJsonInput.oninput = updateJsonSize;
+
+// Time Tool Logic
+function formatBeijing(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const i = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${i}:${s}`;
+}
+
+setInterval(() => {
+  const now = new Date();
+  document.getElementById('current-time-str').textContent = formatBeijing(now);
+  document.getElementById('current-timestamp-val').textContent = Math.floor(now.getTime() / 1000);
+}, 1000);
+
+document.getElementById('btn-ts-to-date').onclick = () => {
+  let val = document.getElementById('input-timestamp').value.trim();
+  if (!val) return;
+  let ts = parseInt(val);
+  if (val.length === 10) ts *= 1000;
+  const date = new Date(ts);
+  document.getElementById('output-date').value = isNaN(date.getTime()) ? '无效的时间戳' : formatBeijing(date);
+};
+
+document.getElementById('btn-date-to-ts').onclick = () => {
+  const val = document.getElementById('input-date').value.trim();
+  if (!val) return;
+  const date = new Date(val.replace(/-/g, '/')); // 兼容性处理
+  document.getElementById('output-timestamp').value = isNaN(date.getTime()) ? '无效的时间格式' : Math.floor(date.getTime() / 1000);
+};
+
+// Length Tool Logic
+const lenFactors = {
+  mm: 1,
+  cm: 10,
+  dm: 100,
+  m: 1000,
+  km: 1000000,
+  inch: 25.4,
+  ft: 304.8,
+  yd: 914.4,
+  mile: 1609344
+};
+
+function convertLength(sourceId, value) {
+  if (value === '' || isNaN(value)) {
+    document.querySelectorAll('.len-input').forEach(input => { if (input.id !== sourceId) input.value = ''; });
+    return;
+  }
+  const valueInMm = value * lenFactors[sourceId.replace('unit-', '')];
+  document.querySelectorAll('.len-input').forEach(input => {
+    if (input.id === sourceId) return;
+    const unit = input.id.replace('unit-', '');
+    const result = valueInMm / lenFactors[unit];
+    // 动态精度处理：结果大于1保留2位，小于1保留4位
+    const precision = result >= 1 ? 2 : 4;
+    input.value = parseFloat(result.toFixed(precision));
+  });
+}
+
+document.querySelectorAll('.len-input').forEach(input => {
+  input.oninput = (e) => convertLength(e.target.id, e.target.value);
+});
+
+document.getElementById('btn-len-clear').onclick = () => {
+  document.querySelectorAll('.len-input').forEach(input => input.value = '');
+};
+
+// Generator Logic
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function createRng(seed){const seedInt=seed?hashStrToInt(seed):Math.floor(Math.random()*4294967295);const r=mulberry32(seedInt);return{random:()=>r(),int:(min,max)=>Math.floor(r()*(max-min+1))+min,choice:(arr)=>arr[Math.floor(r()*arr.length)],bool:(p=0.5)=>r()<p}}
 const common={streets:["Main","Oak","Pine","Maple","Cedar","Elm","Birch","Walnut","Cherry","Chestnut","Sunset","Riverside","Park","Hill","Lake","View","North","South","East","West"],suffixUS:["St","Ave","Rd","Blvd","Dr","Ln","Way"],streetFR:["Street","Avenue","Boulevard","Lane","Place"],streetDE:["Street","Way","Avenue","Square"],streetUK:["Road","Street","Avenue","Close","Lane","Drive"],streetBR:["Street","Avenue","Lane"],streetCN:["Road","Street","Avenue","Lane","Alley"],streetJP:["Street","Road"],aptUS:["Apt","Unit","Suite"],aptCN:["Building","Unit","Room"]}
 function pad(n,len){return String(n).padStart(len,"0")}
 function toCSV(rows){if(!rows.length)return"";const header=Object.keys(rows[0]);const esc=v=>String(v).replace(/"/g,'""');const lines=[header.map(h=>`"${h}"`).join(",")];for(const r of rows){lines.push(header.map(h=>`"${esc(r[h]??"")}"`).join(","))}return lines.join("\n")}
 function digits(r,n){let s="";for(let i=0;i<n;i++){s+=r.int(0,9)}return s}
-function genPhone(code,r){switch(code){case"US":case"CA":{const npa=String(r.int(2,9))+String(r.int(0,9))+String(r.int(0,9));const nxx=String(r.int(2,9))+String(r.int(0,9))+String(r.int(0,9));const line=digits(r,4);return "+1"+npa+nxx+line}case"UK":return "+447"+digits(r,9);case"DE":return "+4915"+digits(r,8);case"FR":return "+336"+digits(r,8);case"JP":return "+8190"+digits(r,8);case"IN":{const first=String(r.choice([6,7,8,9]));return "+91"+first+digits(r,9)}case"AU":return "+614"+digits(r,8);case"BR":{const area=String(r.int(11,99)).padStart(2,"0");return "+55"+area+"9"+digits(r,8)}case"CN":{const lead=String(r.choice([3,4,5,6,7,8,9]));return "+861"+lead+digits(r,9)}default:return "+"+digits(r,11)}}
-function genEmail(code,r){const firsts=["alex","sam","li","wei","john","emma","noah","mia","yuki","arjun","lucas","sofia","bruno","anna"];const lasts=["wang","zhang","smith","johnson","brown","taylor","miller","garcia","martin","schneider","dupont","suzuki","patel","silva"];const tldMap={US:"us",UK:"uk",DE:"de",FR:"fr",JP:"jp",IN:"in",CA:"ca",AU:"au",BR:"br",CN:"cn"};const provider=r.choice(["mail","test","example","demo"]);const num=r.int(10,9999);return `${r.choice(firsts)}.${r.choice(lasts)}${num}@${provider}.${tldMap[code]||"com"}`}
+function genPhone(code,r){switch(code){case"US":case"CA":{const npa=String(r.int(2,9))+String(r.int(0,9))+String(r.int(0,9));const nxx=String(r.int(2,9))+String(r.int(0,9))+String(r.int(0,9));const line=digits(r,4);return "+1"+npa+nxx+line}case"UK":return "+447"+digits(r,9);case"DE":return "+4915"+digits(r,8);case"FR":return "+336"+digits(r,8);case"JP":return "+8190"+digits(r,8);case"IN":{const first=String(r.choice([6,7,8,9]));return "+91"+first+digits(r,9)}case"AU":return "+614"+digits(r,8);case"BR":{const area=String(r.int(11,99)).padStart(2,"0");return "+55"+area+"9"+digits(r,8)}case"CN":{const lead=String(r.choice([3,4,5,6,7,8,9]));return "+861"+lead+digits(r,9)}case"BE":return "+324"+digits(r,8);case"NL":return "+316"+digits(r,8);case"CH":return "+417"+digits(r,8);case"SE":return "+467"+digits(r,8);case"NO":return "+47"+r.choice([4,9])+digits(r,7);case"RU":return "+79"+digits(r,9);case"KR":return "+8210"+digits(r,8);case"SG":return "+65"+r.choice([8,9])+digits(r,7);case"MX":return "+52"+digits(r,10);case"ES":return "+34"+r.choice([6,7])+digits(r,8);default:return "+"+digits(r,11)}}
+function genEmail(code,r){const firsts=["alex","sam","li","wei","john","emma","noah","mia","yuki","arjun","lucas","sofia","bruno","anna"];const lasts=["wang","zhang","smith","johnson","brown","taylor","miller","garcia","martin","schneider","dupont","suzuki","patel","silva"];const tldMap={US:"us",UK:"uk",DE:"de",FR:"fr",JP:"jp",IN:"in",CA:"ca",AU:"au",BR:"br",CN:"cn",BE:"be",NL:"nl",CH:"ch",SE:"se",NO:"no",RU:"ru",KR:"kr",SG:"sg",MX:"mx",ES:"es"};const provider=r.choice(["mail","test","example","demo"]);const num=r.int(10,9999);return `${r.choice(firsts)}.${r.choice(lasts)}${num}@${provider}.${tldMap[code]||"com"}`}
 function renderTable(rows){if(!rows.length)return"<div class='small'>无数据</div>";const cols=["phone","email","address","country_region","state_province","city","postal_zip_code"];let th="<tr>"+cols.map(c=>`<th>${c}</th>`).join("")+"</tr>";let tb=rows.slice(0,200).map(r=>"<tr>"+cols.map(c=>`<td>${r[c]??""}</td>`).join("")+"</tr>").join("");let more=rows.length>200?`<div class='small'>仅显示前200条，总计 ${rows.length} 条</div>`:"";return `<table class="table">${th}${tb}</table>${more}`}
 const realAddresses = {
   US: [
@@ -148,39 +639,100 @@ const realAddresses = {
     { a: "Kyoto Station, Higashishiokoji Kamadonocho", c: "Shimogyo Ward", s: "Kyoto", z: "600-8216" }
   ],
   CN: [
-    { a: "No. 4 Jingshan Front St", c: "Beijing", s: "Beijing", z: "100009" },
+    { a: "No. 4 Jingshan Front St, Dongcheng District", c: "Beijing", s: "Beijing", z: "100009" },
     { a: "No. 1 Chang'an Avenue", c: "Beijing", s: "Beijing", z: "100000" },
-    { a: "No. 300 Nanjing West Road", c: "Shanghai", s: "Shanghai", z: "200003" },
-    { a: "No. 12 Tiyu West Road", c: "Guangzhou", s: "Guangdong", z: "510620" },
-    { a: "No. 10000 Shennan Avenue", c: "Shenzhen", s: "Guangdong", z: "518067" },
-    { a: "No. 1 Tianfu Avenue", c: "Chengdu", s: "Sichuan", z: "610041" }
+    { a: "No. 300 Nanjing West Road, Jing'an District", c: "Shanghai", s: "Shanghai", z: "200003" },
+    { a: "No. 12 Tiyu West Road, Tianhe District", c: "Guangzhou", s: "Guangdong", z: "510620" },
+    { a: "No. 10000 Shennan Avenue, Nanshan District", c: "Shenzhen", s: "Guangdong", z: "518067" },
+    { a: "No. 1 Tianfu Avenue, Wuhou District", c: "Chengdu", s: "Sichuan", z: "610041" },
+    { a: "No. 88 Hubin Road, Shangcheng District", c: "Hangzhou", s: "Zhejiang", z: "310006" },
+    { a: "No. 268 Zhongshan Road, Gulou District", c: "Nanjing", s: "Jiangsu", z: "210008" }
   ],
   CA: [
     { a: "111 Wellington St", c: "Ottawa", s: "ON", z: "K1A 0A6" },
     { a: "100 Queen St W", c: "Toronto", s: "ON", z: "M5H 2N2" },
     { a: "453 W 12th Ave", c: "Vancouver", s: "BC", z: "V5Y 1V4" },
     { a: "275 Notre-Dame St E", c: "Montreal", s: "QC", z: "H2Y 1C6" },
-    { a: "800 Macleod Trail SE", c: "Calgary", s: "AB", z: "T2P 2M5" }
+    { a: "800 Macleod Trail SE", c: "Calgary", s: "AB", z: "T2P 2M5" },
+    { a: "510 Main St", c: "Winnipeg", s: "MB", z: "R3B 1B9" }
   ],
   AU: [
     { a: "Bennelong Point", c: "Sydney", s: "NSW", z: "2000" },
     { a: "483 George St", c: "Sydney", s: "NSW", z: "2000" },
     { a: "90 Swanston St", c: "Melbourne", s: "VIC", z: "3000" },
     { a: "64 Adelaide St", c: "Brisbane", s: "QLD", z: "4000" },
-    { a: "2 Parliament Square", c: "Hobart", s: "TAS", z: "7000" }
+    { a: "2 Parliament Square", c: "Hobart", s: "TAS", z: "7000" },
+    { a: "27 St Georges Terrace", c: "Perth", s: "WA", z: "6000" }
   ],
   BR: [
     { a: "Praca dos Tres Poderes", c: "Brasilia", s: "DF", z: "70160-900" },
     { a: "Avenida Paulista 1000", c: "Sao Paulo", s: "SP", z: "01310-100" },
     { a: "Praca XV de Novembro", c: "Rio de Janeiro", s: "RJ", z: "20010-000" },
-    { a: "Avenida Afonso Pena 1212", c: "Belo Horizonte", s: "MG", z: "30130-003" }
+    { a: "Avenida Afonso Pena 1212", c: "Belo Horizonte", s: "MG", z: "30130-003" },
+    { a: "Praca da Matriz", c: "Porto Alegre", s: "RS", z: "90010-000" }
   ],
   IN: [
     { a: "Rashtrapati Bhavan", c: "New Delhi", s: "Delhi", z: "110004" },
     { a: "MG Road", c: "Bengaluru", s: "Karnataka", z: "560001" },
     { a: "Marine Drive", c: "Mumbai", s: "Maharashtra", z: "400020" },
     { a: "Mount Road", c: "Chennai", s: "Tamil Nadu", z: "600002" },
-    { a: "Charminar Rd", c: "Hyderabad", s: "Telangana", z: "500002" }
+    { a: "Charminar Rd", c: "Hyderabad", s: "Telangana", z: "500002" },
+    { a: "Ashram Road", c: "Ahmedabad", s: "Gujarat", z: "380006" }
+  ],
+  BE: [
+    { a: "Grand Place 1", c: "Brussels", s: "Brussels", z: "1000" },
+    { a: "Grote Markt 1", c: "Antwerp", s: "Antwerp", z: "2000" },
+    { a: "Place Saint-Lambert", c: "Liege", s: "Liege", z: "4000" },
+    { a: "Place de l'Albertine", c: "Brussels", s: "Brussels", z: "1000" }
+  ],
+  NL: [
+    { a: "Dam 1", c: "Amsterdam", s: "North Holland", z: "1012 JS" },
+    { a: "Coolsingel 40", c: "Rotterdam", s: "South Holland", z: "3011 AD" },
+    { a: "Spui 70", c: "The Hague", s: "South Holland", z: "2511 BT" },
+    { a: "Museumplein 6", c: "Amsterdam", s: "North Holland", z: "1071 DJ" }
+  ],
+  CH: [
+    { a: "Bahnhofstrasse 1", c: "Zurich", s: "Zurich", z: "8001" },
+    { a: "Quai du Mont-Blanc 13", c: "Geneva", s: "Geneva", z: "1201" },
+    { a: "Bundesplatz 3", c: "Bern", s: "Bern", z: "3003" },
+    { a: "Via Nassa 1", c: "Lugano", s: "Ticino", z: "6900" }
+  ],
+  SE: [
+    { a: "Slottsbacken 1", c: "Stockholm", s: "Stockholm", z: "111 30" },
+    { a: "Gustaf Adolfs Torg 1", c: "Gothenburg", s: "Vastra Gotaland", z: "411 10" },
+    { a: "Stortorget 2", c: "Malmo", s: "Skane", z: "211 34" },
+    { a: "Hamngatan 18", c: "Stockholm", s: "Stockholm", z: "111 47" }
+  ],
+  NO: [
+    { a: "Slottsplassen 1", c: "Oslo", s: "Oslo", z: "0010" },
+    { a: "Bryggen", c: "Bergen", s: "Vestland", z: "5003" },
+    { a: "Munkegata 1", c: "Trondheim", s: "Trondelag", z: "7013" },
+    { a: "Karl Johans gate 22", c: "Oslo", s: "Oslo", z: "0026" }
+  ],
+  RU: [
+    { a: "Red Square, 3", c: "Moscow", s: "Moscow", z: "109012" },
+    { a: "Nevsky Ave, 28", c: "Saint Petersburg", s: "Saint Petersburg", z: "191186" },
+    { a: "Lenina St, 1", c: "Novosibirsk", s: "Novosibirsk Oblast", z: "630099" }
+  ],
+  KR: [
+    { a: "1 Sejong-no, Jongno-gu", c: "Seoul", s: "Seoul", z: "03045" },
+    { a: "161 Jungang-daero, Dong-gu", c: "Busan", s: "Busan", z: "48733" },
+    { a: "272 Jakjeon-ro, Gyeyang-gu", c: "Incheon", s: "Incheon", z: "21115" }
+  ],
+  SG: [
+    { a: "10 Bayfront Ave", c: "Singapore", s: "Singapore", z: "018956" },
+    { a: "8 Sentosa Gateway", c: "Singapore", s: "Singapore", z: "098269" },
+    { a: "21 Orchard Turn", c: "Singapore", s: "Singapore", z: "238801" }
+  ],
+  MX: [
+    { a: "Plaza de la Constitucion S/N, Centro Historico", c: "Mexico City", s: "CDMX", z: "06000" },
+    { a: "Av. Paseo de la Reforma 50, Polanco", c: "Mexico City", s: "CDMX", z: "11580" },
+    { a: "Av. Ignacio L. Vallarta 6503", c: "Zapopan", s: "Jalisco", z: "45010" }
+  ],
+  ES: [
+    { a: "Calle de Bailen, s/n", c: "Madrid", s: "Madrid", z: "28071" },
+    { a: "La Rambla, 91", c: "Barcelona", s: "Catalonia", z: "08002" },
+    { a: "Calle de la Paz, 2", c: "Valencia", s: "Valencia", z: "46003" }
   ]
 };
 
@@ -190,18 +742,21 @@ function getReal(code, r) {
   const phone = genPhone(code, r);
   const email = genEmail(code, r);
   let addr = "";
-  const countryMap = { US: "United States", UK: "United Kingdom", DE: "Germany", FR: "France", JP: "Japan", CN: "China", CA: "Canada", AU: "Australia", BR: "Brazil", IN: "India" };
+  const countryMap = { US: "United States", UK: "United Kingdom", DE: "Germany", FR: "France", JP: "Japan", CN: "China", CA: "Canada", AU: "Australia", BR: "Brazil", IN: "India", BE: "Belgium", NL: "Netherlands", CH: "Switzerland", SE: "Sweden", NO: "Norway", RU: "Russia", KR: "South Korea", SG: "Singapore", MX: "Mexico", ES: "Spain" };
   const countryName = countryMap[code];
 
   switch (code) {
     case "US": case "CA": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
     case "UK": addr = `${it.a}, ${it.c} ${it.z}, ${countryName}`; break;
-    case "DE": case "FR": addr = `${it.a}, ${it.z} ${it.c}, ${countryName}`; break;
+    case "DE": case "FR": case "BE": case "CH": case "NO": case "SE": case "RU": case "KR": addr = `${it.a}, ${it.z} ${it.c}, ${countryName}`; break;
+    case "NL": addr = `${it.a}, ${it.z} ${it.c}, ${countryName}`; break;
     case "JP": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
     case "CN": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
     case "BR": addr = `${it.a}, ${it.c} - ${it.s}, ${it.z}, ${countryName}`; break;
     case "AU": addr = `${it.a}, ${it.c} ${it.s} ${it.z}, ${countryName}`; break;
     case "IN": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
+    case "MX": case "ES": addr = `${it.a}, ${it.z} ${it.c}, ${it.s}, ${countryName}`; break;
+    case "SG": addr = `${it.a}, Singapore ${it.z}`; break;
     default: addr = `${it.a}, ${it.c}, ${it.z}, ${countryName}`;
   }
 
@@ -218,7 +773,17 @@ function genCA(r) { return getReal("CA", r); }
 function genAU(r) { return getReal("AU", r); }
 function genBR(r) { return getReal("BR", r); }
 function genCN(r) { return getReal("CN", r); }
-const generators={US:genUS,UK:genUK,DE:genDE,FR:genFR,JP:genJP,IN:genIN,CA:genCA,AU:genAU,BR:genBR,CN:genCN}
+function genBE(r) { return getReal("BE", r); }
+function genNL(r) { return getReal("NL", r); }
+function genCH(r) { return getReal("CH", r); }
+function genSE(r) { return getReal("SE", r); }
+function genNO(r) { return getReal("NO", r); }
+function genRU(r) { return getReal("RU", r); }
+function genKR(r) { return getReal("KR", r); }
+function genSG(r) { return getReal("SG", r); }
+function genMX(r) { return getReal("MX", r); }
+function genES(r) { return getReal("ES", r); }
+const generators={US:genUS,UK:genUK,DE:genDE,FR:genFR,JP:genJP,IN:genIN,CA:genCA,AU:genAU,BR:genBR,CN:genCN,BE:genBE,NL:genNL,CH:genCH,SE:genSE,NO:genNO,RU:genRU,KR:genKR,SG:genSG,MX:genMX,ES:genES}
 function generate(country,count,seed){const r=createRng(seed);const fn=generators[country];const rows=[];for(let i=0;i<count;i++){rows.push(fn(r))}return rows}
 const elCountry=document.getElementById("country")
 const elCount=document.getElementById("count")
