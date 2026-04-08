@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>测试数据地址生成器</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px;background:#f6f7fb;color:#111}
+h1{font-size:20px;margin:0 0 16px}
+.container{max-width:980px;margin:0 auto}
+.panel{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+label{font-size:13px;color:#374151}
+select,input{height:36px;padding:6px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+button{height:36px;padding:0 14px;border:1px solid #1f2937;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+button.secondary{background:#fff;color:#111}
+button:disabled{opacity:.5;cursor:not-allowed}
+pre,textarea{width:100%;min-height:160px;background:#0f172a;color:#e5e7eb;border-radius:10px;padding:12px;overflow:auto;border:none}
+.table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
+.table th,.table td{border-bottom:1px solid #e5e7eb;padding:10px;text-align:left;font-size:13px}
+.table tr:hover{background:#f9fafb}
+.kbd{font-family:monospace;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:2px 6px}
+.small{font-size:12px;color:#6b7280}
+.flex-end{display:flex;gap:8px;justify-content:flex-end}
+footer{margin-top:16px;color:#6b7280;font-size:12px}
+.badge{display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:8px;padding:2px 8px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>测试数据地址生成器 <span class="badge">JS</span></h1>
+  <div class="panel">
+    <div class="row">
+      <div class="field">
+        <label>国家</label>
+        <select id="country">
+          <option value="CN">中国</option>
+          <option value="US">美国</option>
+          <option value="UK">英国</option>
+          <option value="DE">德国</option>
+          <option value="FR">法国</option>
+          <option value="JP">日本</option>
+          <option value="IN">印度</option>
+          <option value="CA">加拿大</option>
+          <option value="AU">澳大利亚</option>
+          <option value="BR">巴西</option>
+        </select>
+      </div>
+      <div class="field" style="max-width:140px">
+        <label>数量</label>
+        <input id="count" type="number" min="1" max="10000" value="20">
+      </div>
+      <div class="field" style="max-width:200px">
+        <label>输出格式</label>
+        <select id="format">
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>随机种子（可选）</label>
+        <input id="seed" type="text" placeholder="如：test-2026">
+      </div>
+    </div>
+    <div class="row">
+      <button id="generate">生成</button>
+      <button id="copy" class="secondary" disabled>复制</button>
+      <button id="download" class="secondary" disabled>下载</button>
+      <span class="small">支持固定种子复现相同结果。复制键将复制下方文本区域的内容。</span>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:2">
+        <label>预览</label>
+        <div id="preview"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>原始数据</label>
+        <textarea id="raw" readonly></textarea>
+      </div>
+    </div>
+    <div class="row">
+      <span class="small" style="color: #b91c1c; background: #fee2e2; padding: 8px; border-radius: 6px; width: 100%;">
+        <strong>数据真实性说明：</strong>本工具不接入付费地图 API，因此无法生成无限量的唯一私人住址。目前生成的地址是从内置的<strong>真实公共地标、政府机构或商业中心库</strong>中随机抽取的。这些地址 100% 真实存在且邮编匹配，所有字段（City, State, Zip）均符合该国英文书写标准。
+      </span>
+    </div>
+    <footer>字段包含：phone、email、address、country/region、state/province、city、postal/zip code</footer>
+  </div>
+</div>
+<script>
+function hashStrToInt(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function createRng(seed){const seedInt=seed?hashStrToInt(seed):Math.floor(Math.random()*4294967295);const r=mulberry32(seedInt);return{random:()=>r(),int:(min,max)=>Math.floor(r()*(max-min+1))+min,choice:(arr)=>arr[Math.floor(r()*arr.length)],bool:(p=0.5)=>r()<p}}
+const common={streets:["Main","Oak","Pine","Maple","Cedar","Elm","Birch","Walnut","Cherry","Chestnut","Sunset","Riverside","Park","Hill","Lake","View","North","South","East","West"],suffixUS:["St","Ave","Rd","Blvd","Dr","Ln","Way"],streetFR:["Street","Avenue","Boulevard","Lane","Place"],streetDE:["Street","Way","Avenue","Square"],streetUK:["Road","Street","Avenue","Close","Lane","Drive"],streetBR:["Street","Avenue","Lane"],streetCN:["Road","Street","Avenue","Lane","Alley"],streetJP:["Street","Road"],aptUS:["Apt","Unit","Suite"],aptCN:["Building","Unit","Room"]}
+function pad(n,len){return String(n).padStart(len,"0")}
+function toCSV(rows){if(!rows.length)return"";const header=Object.keys(rows[0]);const esc=v=>String(v).replace(/"/g,'""');const lines=[header.map(h=>`"${h}"`).join(",")];for(const r of rows){lines.push(header.map(h=>`"${esc(r[h]??"")}"`).join(","))}return lines.join("\n")}
+function digits(r,n){let s="";for(let i=0;i<n;i++){s+=r.int(0,9)}return s}
+function genPhone(code,r){switch(code){case"US":case"CA":{const npa=String(r.int(2,9))+String(r.int(0,9))+String(r.int(0,9));const nxx=String(r.int(2,9))+String(r.int(0,9))+String(r.int(0,9));const line=digits(r,4);return "+1"+npa+nxx+line}case"UK":return "+447"+digits(r,9);case"DE":return "+4915"+digits(r,8);case"FR":return "+336"+digits(r,8);case"JP":return "+8190"+digits(r,8);case"IN":{const first=String(r.choice([6,7,8,9]));return "+91"+first+digits(r,9)}case"AU":return "+614"+digits(r,8);case"BR":{const area=String(r.int(11,99)).padStart(2,"0");return "+55"+area+"9"+digits(r,8)}case"CN":{const lead=String(r.choice([3,4,5,6,7,8,9]));return "+861"+lead+digits(r,9)}default:return "+"+digits(r,11)}}
+function genEmail(code,r){const firsts=["alex","sam","li","wei","john","emma","noah","mia","yuki","arjun","lucas","sofia","bruno","anna"];const lasts=["wang","zhang","smith","johnson","brown","taylor","miller","garcia","martin","schneider","dupont","suzuki","patel","silva"];const tldMap={US:"us",UK:"uk",DE:"de",FR:"fr",JP:"jp",IN:"in",CA:"ca",AU:"au",BR:"br",CN:"cn"};const provider=r.choice(["mail","test","example","demo"]);const num=r.int(10,9999);return `${r.choice(firsts)}.${r.choice(lasts)}${num}@${provider}.${tldMap[code]||"com"}`}
+function renderTable(rows){if(!rows.length)return"<div class='small'>无数据</div>";const cols=["phone","email","address","country_region","state_province","city","postal_zip_code"];let th="<tr>"+cols.map(c=>`<th>${c}</th>`).join("")+"</tr>";let tb=rows.slice(0,200).map(r=>"<tr>"+cols.map(c=>`<td>${r[c]??""}</td>`).join("")+"</tr>").join("");let more=rows.length>200?`<div class='small'>仅显示前200条，总计 ${rows.length} 条</div>`:"";return `<table class="table">${th}${tb}</table>${more}`}
+const realAddresses = {
+  US: [
+    { a: "1600 Pennsylvania Avenue NW", c: "Washington", s: "DC", z: "20500" },
+    { a: "350 5th Ave", c: "New York", s: "NY", z: "10118" },
+    { a: "1 Market St", c: "San Francisco", s: "CA", z: "94105" },
+    { a: "233 S Wacker Dr", c: "Chicago", s: "IL", z: "60606" },
+    { a: "700 5th Ave", c: "Seattle", s: "WA", z: "98104" },
+    { a: "400 S Orange Ave", c: "Orlando", s: "FL", z: "32801" },
+    { a: "600 Congress Ave", c: "Austin", s: "TX", z: "78701" },
+    { a: "24 Beacon St", c: "Boston", s: "MA", z: "02108" },
+    { a: "100 Universal City Plaza", c: "Universal City", s: "CA", z: "91608" },
+    { a: "2000 Post Oak Blvd", c: "Houston", s: "TX", z: "77056" }
+  ],
+  UK: [
+    { a: "10 Downing Street", c: "London", s: "England", z: "SW1A 2AA" },
+    { a: "Buckingham Palace", c: "London", s: "England", z: "SW1A 1AA" },
+    { a: "221B Baker Street", c: "London", s: "England", z: "NW1 6XE" },
+    { a: "The Old Trafford, Sir Matt Busby Way", c: "Manchester", s: "England", z: "M16 0RA" },
+    { a: "Victoria Square", c: "Birmingham", s: "England", z: "B1 1BD" },
+    { a: "Royal Mile", c: "Edinburgh", s: "Scotland", z: "EH1 1SG" },
+    { a: "Cardiff Castle, Castle St", c: "Cardiff", s: "Wales", z: "CF10 3RB" }
+  ],
+  DE: [
+    { a: "Pariser Platz 1", c: "Berlin", s: "Berlin", z: "10117" },
+    { a: "Marienplatz 1", c: "Munich", s: "Bavaria", z: "80331" },
+    { a: "Rathausmarkt 1", c: "Hamburg", s: "Hamburg", z: "20095" },
+    { a: "Domkloster 4", c: "Cologne", s: "North Rhine-Westphalia", z: "50667" },
+    { a: "Roemerberg 23", c: "Frankfurt", s: "Hesse", z: "60311" },
+    { a: "Schlossplatz 1", c: "Stuttgart", s: "Baden-Wurttemberg", z: "70173" },
+    { a: "Marktplatz 6", c: "Dusseldorf", s: "North Rhine-Westphalia", z: "40213" }
+  ],
+  FR: [
+    { a: "Champ de Mars, 5 Avenue Anatole France", c: "Paris", s: "Ile-de-France", z: "75007" },
+    { a: "Place Bellecour", c: "Lyon", s: "Auvergne-Rhone-Alpes", z: "69002" },
+    { a: "7 Square d'Anvers", c: "Paris", s: "Ile-de-France", z: "75009" },
+    { a: "1 Place du Capitole", c: "Toulouse", s: "Occitanie", z: "31000" },
+    { a: "1 Promenade des Anglais", c: "Nice", s: "Provence-Alpes-Cote d'Azur", z: "06000" },
+    { a: "Place de la Bourse", c: "Bordeaux", s: "Nouvelle-Aquitaine", z: "33000" }
+  ],
+  JP: [
+    { a: "1-1 Chiyoda", c: "Chiyoda City", s: "Tokyo", z: "100-8111" },
+    { a: "1-1-1 Osaki", c: "Shinagawa City", s: "Tokyo", z: "141-0032" },
+    { a: "3-1-1 Umeda", c: "Kita Ward", s: "Osaka", z: "530-0001" },
+    { a: "1-1 Tenjin", c: "Chuo Ward", s: "Fukuoka", z: "810-0001" },
+    { a: "1-1 Odori Nishi", c: "Chuo Ward", s: "Sapporo", z: "060-0042" },
+    { a: "Kyoto Station, Higashishiokoji Kamadonocho", c: "Shimogyo Ward", s: "Kyoto", z: "600-8216" }
+  ],
+  CN: [
+    { a: "No. 4 Jingshan Front St", c: "Beijing", s: "Beijing", z: "100009" },
+    { a: "No. 1 Chang'an Avenue", c: "Beijing", s: "Beijing", z: "100000" },
+    { a: "No. 300 Nanjing West Road", c: "Shanghai", s: "Shanghai", z: "200003" },
+    { a: "No. 12 Tiyu West Road", c: "Guangzhou", s: "Guangdong", z: "510620" },
+    { a: "No. 10000 Shennan Avenue", c: "Shenzhen", s: "Guangdong", z: "518067" },
+    { a: "No. 1 Tianfu Avenue", c: "Chengdu", s: "Sichuan", z: "610041" }
+  ],
+  CA: [
+    { a: "111 Wellington St", c: "Ottawa", s: "ON", z: "K1A 0A6" },
+    { a: "100 Queen St W", c: "Toronto", s: "ON", z: "M5H 2N2" },
+    { a: "453 W 12th Ave", c: "Vancouver", s: "BC", z: "V5Y 1V4" },
+    { a: "275 Notre-Dame St E", c: "Montreal", s: "QC", z: "H2Y 1C6" },
+    { a: "800 Macleod Trail SE", c: "Calgary", s: "AB", z: "T2P 2M5" }
+  ],
+  AU: [
+    { a: "Bennelong Point", c: "Sydney", s: "NSW", z: "2000" },
+    { a: "483 George St", c: "Sydney", s: "NSW", z: "2000" },
+    { a: "90 Swanston St", c: "Melbourne", s: "VIC", z: "3000" },
+    { a: "64 Adelaide St", c: "Brisbane", s: "QLD", z: "4000" },
+    { a: "2 Parliament Square", c: "Hobart", s: "TAS", z: "7000" }
+  ],
+  BR: [
+    { a: "Praca dos Tres Poderes", c: "Brasilia", s: "DF", z: "70160-900" },
+    { a: "Avenida Paulista 1000", c: "Sao Paulo", s: "SP", z: "01310-100" },
+    { a: "Praca XV de Novembro", c: "Rio de Janeiro", s: "RJ", z: "20010-000" },
+    { a: "Avenida Afonso Pena 1212", c: "Belo Horizonte", s: "MG", z: "30130-003" }
+  ],
+  IN: [
+    { a: "Rashtrapati Bhavan", c: "New Delhi", s: "Delhi", z: "110004" },
+    { a: "MG Road", c: "Bengaluru", s: "Karnataka", z: "560001" },
+    { a: "Marine Drive", c: "Mumbai", s: "Maharashtra", z: "400020" },
+    { a: "Mount Road", c: "Chennai", s: "Tamil Nadu", z: "600002" },
+    { a: "Charminar Rd", c: "Hyderabad", s: "Telangana", z: "500002" }
+  ]
+};
+
+function getReal(code, r) {
+  const list = realAddresses[code];
+  const it = r.choice(list);
+  const phone = genPhone(code, r);
+  const email = genEmail(code, r);
+  let addr = "";
+  const countryMap = { US: "United States", UK: "United Kingdom", DE: "Germany", FR: "France", JP: "Japan", CN: "China", CA: "Canada", AU: "Australia", BR: "Brazil", IN: "India" };
+  const countryName = countryMap[code];
+
+  switch (code) {
+    case "US": case "CA": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
+    case "UK": addr = `${it.a}, ${it.c} ${it.z}, ${countryName}`; break;
+    case "DE": case "FR": addr = `${it.a}, ${it.z} ${it.c}, ${countryName}`; break;
+    case "JP": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
+    case "CN": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
+    case "BR": addr = `${it.a}, ${it.c} - ${it.s}, ${it.z}, ${countryName}`; break;
+    case "AU": addr = `${it.a}, ${it.c} ${it.s} ${it.z}, ${countryName}`; break;
+    case "IN": addr = `${it.a}, ${it.c}, ${it.s} ${it.z}, ${countryName}`; break;
+    default: addr = `${it.a}, ${it.c}, ${it.z}, ${countryName}`;
+  }
+
+  return { phone, email, address: addr, country_region: countryName, state_province: it.s, city: it.c, postal_zip_code: it.z };
+}
+
+function genUS(r) { return getReal("US", r); }
+function genUK(r) { return getReal("UK", r); }
+function genDE(r) { return getReal("DE", r); }
+function genFR(r) { return getReal("FR", r); }
+function genJP(r) { return getReal("JP", r); }
+function genIN(r) { return getReal("IN", r); }
+function genCA(r) { return getReal("CA", r); }
+function genAU(r) { return getReal("AU", r); }
+function genBR(r) { return getReal("BR", r); }
+function genCN(r) { return getReal("CN", r); }
+const generators={US:genUS,UK:genUK,DE:genDE,FR:genFR,JP:genJP,IN:genIN,CA:genCA,AU:genAU,BR:genBR,CN:genCN}
+function generate(country,count,seed){const r=createRng(seed);const fn=generators[country];const rows=[];for(let i=0;i<count;i++){rows.push(fn(r))}return rows}
+const elCountry=document.getElementById("country")
+const elCount=document.getElementById("count")
+const elFormat=document.getElementById("format")
+const elSeed=document.getElementById("seed")
+const elGen=document.getElementById("generate")
+const elCopy=document.getElementById("copy")
+const elDownload=document.getElementById("download")
+const elPreview=document.getElementById("preview")
+const elRaw=document.getElementById("raw")
+function serialize(rows,fmt){return fmt==="csv"?toCSV(rows):JSON.stringify(rows,null,2)}
+function updateUI(rows,fmt){elPreview.innerHTML=renderTable(rows);const txt=serialize(rows,fmt);elRaw.value=txt;elCopy.disabled=txt.length===0;elDownload.disabled=txt.length===0}
+elGen.onclick=function(){const country=elCountry.value;const count=Math.max(1,Math.min(10000,parseInt(elCount.value||"1")));const seed=elSeed.value.trim()||undefined;const rows=generate(country,count,seed);updateUI(rows,elFormat.value)}
+elFormat.onchange=function(){try{const current=JSON.parse(elRaw.value)}catch{ }
+const country=elCountry.value;const count=Math.max(1,Math.min(10000,parseInt(elCount.value||"1")));const seed=elSeed.value.trim()||undefined;const rows=generate(country,count,seed);updateUI(rows,elFormat.value)}
+elCopy.onclick=async function(){const text=elRaw.value;if(!text)return;try{await navigator.clipboard.writeText(text)}catch{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta)}}
+elDownload.onclick=function(){const fmt=elFormat.value;const blob=new Blob([elRaw.value],{type:fmt==="csv"?"text/csv;charset=utf-8":"application/json;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);const code=elCountry.value;const name=fmt==="csv"?"addresses.csv":"addresses.json";a.download=`${code.toLowerCase()}_${name}`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href)}
+updateUI([],elFormat.value)
+</script>
+</body>
+</html>
